@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRIVATE CHAT Elite</title>
+    <title>Private Chat Elite</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -16,37 +21,77 @@
         :root {
             --primary: #00f2ff;
             --secondary: #bc13fe;
-            --bg-grad: radial-gradient(circle at 50% -20%, #1a0b2e, #000000);
-            --glass-bg: rgba(10, 10, 10, 0.75);
-            --glass-border: rgba(0, 242, 255, 0.2);
+            --bg-dark: #050505;
+            --glass-bg: rgba(10, 10, 10, 0.65); /* More transparent */
+            --glass-border: rgba(0, 242, 255, 0.15);
             --text: #ffffff;
             --text-sec: #aaa;
-            --panel-bg: rgba(0, 0, 0, 0.7);
+            --panel-bg: rgba(0, 0, 0, 0.85);
+            --sent-tick: #777;
+            --seen-tick: #00f2ff;
         }
 
         body.light-mode {
             --primary: #007bff;
             --secondary: #6610f2;
-            --bg-grad: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-            --glass-bg: rgba(255, 255, 255, 0.65);
+            --bg-dark: #f0f2f5;
+            --glass-bg: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(0, 0, 0, 0.1);
             --text: #333;
             --text-sec: #666;
-            --panel-bg: rgba(255, 255, 255, 0.5);
+            --panel-bg: rgba(255, 255, 255, 0.9);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Rajdhani', sans-serif; background: var(--bg-grad); color: var(--text); overflow: hidden; height: 100vh; user-select: none; }
+        
+        body { 
+            margin: 0; 
+            font-family: 'Rajdhani', sans-serif; 
+            background: #000;
+            color: var(--text); 
+            overflow: hidden; 
+            height: 100vh; 
+            user-select: none; 
+        }
+
+        /* MATRIX RAIN CANVAS */
+        #matrix-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.3;
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes msgSlide { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
 
         /* UI Styles */
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; text-align: center; box-shadow: 0 0 30px rgba(0,242,255,0.1); }
-        .glass-panel { background: var(--panel-bg); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
-        h1, h2 { font-family: 'Orbitron', sans-serif; margin: 0; }
-        .btn-main { width: 100%; padding: 12px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; color: white; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; transition: 0.2s; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; text-align: center; box-shadow: 0 0 30px rgba(0,242,255,0.1); animation: fadeIn 0.5s ease-out; }
+        .glass-panel { background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
+        h1, h2 { font-family: 'Orbitron', sans-serif; margin: 0; letter-spacing: 2px; }
+        
+        .btn-main { width: 100%; padding: 14px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; color: #000; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,242,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-main:active { transform: scale(0.98); }
         .btn-sec { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--primary); border-radius: 12px; color: var(--primary); font-weight: bold; font-family: 'Orbitron'; cursor: pointer; }
+        
         input { background: transparent; border: none; color: var(--text); padding: 15px; width: 100%; outline: none; font-family: 'Rajdhani'; font-weight: 600; font-size: 1rem; }
-        .input-group { background: rgba(255,255,255,0.05); margin: 15px 0; padding: 0 15px; border-radius: 12px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .input-group:focus-within { border-color: var(--primary); }
+        .input-group { background: rgba(255,255,255,0.05); margin: 15px 0; padding: 0 15px; border-radius: 12px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .input-group:focus-within { border-color: var(--primary); box-shadow: 0 0 15px rgba(0,242,255,0.15); }
+
+        /* Verified Badge */
+        .verified-badge { color: var(--primary); margin-left: 5px; font-size: 0.9em; vertical-align: middle; filter: drop-shadow(0 0 5px var(--primary)); }
+
+        /* PRELOADER */
+        #preloader { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.5s; }
+        
+        /* PANIC OVERLAY */
+        #panic-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Courier New', Courier, monospace; color: #0f0; }
+        .panic-text { font-size: 1.2rem; margin-top: 20px; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
         /* Lock Screen */
         #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
@@ -54,57 +99,65 @@
         .pin-dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--primary); transition: 0.2s; }
         .pin-dot.filled { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .num-btn { width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1.5rem; font-family: 'Orbitron'; cursor: pointer; }
+        .num-btn { width: 65px; height: 65px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1.8rem; font-family: 'Orbitron'; cursor: pointer; transition: 0.2s; }
         .num-btn:active { background: var(--primary); color: #000; }
 
-        /* Auth */
-        .screen { display: none; height: 100vh; width: 100%; } .screen.active { display: flex; }
-        #auth-screen { justify-content: center; align-items: center; }
+        /* Avatar Gallery */
+        .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; max-height: 150px; overflow-y: auto; padding: 5px; }
+        .avatar-option { font-size: 1.8rem; cursor: pointer; padding: 5px; border-radius: 12px; transition: 0.2s; text-align: center; }
+        .avatar-option:hover, .avatar-option.selected { background: rgba(0, 242, 255, 0.2); transform: scale(1.1); border: 1px solid var(--primary); }
 
         /* Layout */
+        .screen { display: none; height: 100vh; width: 100%; } .screen.active { display: flex; }
+        #auth-screen { justify-content: center; align-items: center; background: radial-gradient(circle at center, #1a0b2e 0%, #000 100%); }
         #chat-screen { flex-direction: row; }
+        
         .sidebar { width: 340px; background: var(--panel-bg); backdrop-filter: blur(20px); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; z-index: 10; }
         .my-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .avatar-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
-        .header-icons .icon-btn { background: none; border: none; color: var(--text-sec); font-size: 1.2rem; margin-left: 10px; cursor: pointer; }
+        .avatar-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.5rem; color: white; background-size: cover; background-position: center; border: 2px solid var(--glass-border); box-shadow: 0 0 10px rgba(0,242,255,0.2); }
+        
+        .header-icons .icon-btn { background: none; border: none; color: var(--text-sec); font-size: 1.2rem; margin-left: 10px; cursor: pointer; transition: 0.2s; }
+        .header-icons .icon-btn:hover { color: var(--primary); transform: scale(1.1); text-shadow: 0 0 5px var(--primary); }
+        .panic-btn { color: #ff4757 !important; }
+
         .user-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .user-item { background: rgba(255,255,255,0.03); margin-bottom: 8px; padding: 12px; border-radius: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 1px solid transparent; }
-        .user-item:hover { border-color: var(--primary); background: rgba(0,242,255,0.05); }
+        .user-item { background: rgba(255,255,255,0.03); margin-bottom: 8px; padding: 12px; border-radius: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .user-item:hover { border-color: var(--primary); background: rgba(0,242,255,0.1); transform: translateX(5px); }
 
-        /* Chat */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.05); position: relative; }
-        .chat-header { padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
+        /* Chat Area */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: transparent; position: relative; }
+        .chat-header { padding: 10px 15px; display: flex; align-items: center; gap: 10px; z-index: 20; }
         
-        /* Chat Search Bar */
-        #chat-search-bar { padding: 10px; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); border-bottom: 1px solid var(--glass-border); display: flex; gap: 10px; }
-        #chat-search-input { flex: 1; background: rgba(255,255,255,0.1); border: none; padding: 8px 15px; border-radius: 20px; color: var(--text); }
-
-        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .msg { max-width: 75%; padding: 10px 15px; border-radius: 18px; position: relative; word-wrap: break-word; font-size: 0.95rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); user-select: text; }
-        .msg.me { align-self: flex-end; background: linear-gradient(135deg, var(--secondary), #8000ff); color: white; border-bottom-right-radius: 2px; }
-        body.light-mode .msg.me { background: linear-gradient(135deg, #007bff, #0056b3); }
-        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.08); border-bottom-left-radius: 2px; border: 1px solid var(--glass-border); }
-        body.light-mode .msg.other { background: rgba(255,255,255,0.8); }
+        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+        .msg { max-width: 75%; padding: 10px 15px; border-radius: 18px; position: relative; word-wrap: break-word; font-size: 0.95rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2); user-select: text; animation: msgSlide 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .msg.me { align-self: flex-end; background: linear-gradient(135deg, var(--secondary), #8000ff); color: white; border-bottom-right-radius: 2px; box-shadow: 0 0 10px rgba(188, 19, 254, 0.3); }
+        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 2px; border: 1px solid var(--glass-border); backdrop-filter: blur(5px); }
         
+        .msg-meta { display: flex; justify-content: flex-end; align-items: center; font-size: 0.65rem; opacity: 0.8; margin-top: 4px; gap: 4px; }
+        .tick-icon { font-size: 0.7rem; color: var(--sent-tick); }
+        .tick-icon.seen { color: var(--seen-tick); filter: drop-shadow(0 0 2px var(--primary)); }
         .msg-sender { font-size: 0.7rem; color: var(--primary); font-weight: bold; display: block; margin-bottom: 3px; }
-        .input-area { padding: 10px 15px; background: var(--panel-bg); display: flex; align-items: center; gap: 10px; }
-        .input-wrapper { flex: 1; background: rgba(255,255,255,0.05); border-radius: 25px; display: flex; align-items: center; border: 1px solid var(--glass-border); }
-        .send-btn-inside { width: 35px; height: 35px; border-radius: 50%; border: none; background: var(--primary); color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .input-area { padding: 10px 15px; background: var(--panel-bg); display: flex; align-items: center; gap: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); z-index: 20; }
+        .input-wrapper { flex: 1; background: rgba(255,255,255,0.05); border-radius: 25px; display: flex; align-items: center; border: 1px solid var(--glass-border); transition: 0.3s; }
+        .input-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,242,255,0.2); }
+        .send-btn-inside { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--primary); color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: 0.2s; }
+        .send-btn-inside:active { transform: scale(0.9); }
 
         /* Utils */
         .hidden { display: none !important; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
-        .status-dot { width: 8px; height: 8px; background: #555; border-radius: 50%; display: inline-block; }
-        .status-dot.online { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         #toast-box { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 200; pointer-events: none; }
-        .toast { background: #222; padding: 10px 20px; border-radius: 50px; color: var(--primary); border: 1px solid var(--primary); margin-top: 5px; }
-        #context-menu { position: fixed; background: #1a1a1a; border: 1px solid var(--glass-border); border-radius: 12px; padding: 5px; z-index: 200; min-width: 150px; }
-        #context-menu div { padding: 10px; cursor: pointer; color: var(--text); }
-        #context-menu div:hover { background: rgba(255,255,255,0.1); border-radius: 8px; }
+        .toast { background: rgba(0,0,0,0.9); padding: 10px 20px; border-radius: 50px; color: var(--primary); border: 1px solid var(--primary); margin-top: 5px; font-family: 'Orbitron'; font-size: 0.8rem; box-shadow: 0 0 15px rgba(0,242,255,0.2); animation: fadeIn 0.3s; }
+        
+        #context-menu { position: fixed; background: rgba(20,20,20,0.95); border: 1px solid var(--glass-border); border-radius: 12px; padding: 5px; z-index: 200; min-width: 150px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
+        #context-menu div { padding: 12px; cursor: pointer; color: var(--text); display: flex; align-items: center; gap: 10px; font-size: 0.9rem; transition: 0.2s; border-radius: 8px; }
+        #context-menu div:hover { background: rgba(0,242,255,0.1); color: var(--primary); }
         .danger { color: #ff4757 !important; }
+        #blocked-banner { background: #ff4757; color: white; padding: 10px; text-align: center; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; }
 
         @media (max-width: 768px) {
-            .sidebar { width: 100%; } .chat-area { display: none; width: 100%; height: 100%; position: absolute; z-index: 50; background: var(--bg-grad); }
+            .sidebar { width: 100%; } .chat-area { display: none; width: 100%; height: 100%; position: absolute; z-index: 50; }
             body.light-mode .chat-area { background: #f0f2f5; }
             #chat-screen.chat-active .sidebar { display: none; } #chat-screen.chat-active .chat-area { display: flex; }
             .back-btn { display: block; background: none; border: none; color: var(--text); font-size: 1.4rem; padding: 5px; }
@@ -113,12 +166,23 @@
 </head>
 <body>
 
+    <canvas id="matrix-canvas"></canvas>
+
+    <div id="preloader">
+        <h1 style="font-family:'Orbitron'; color:var(--primary); font-size:2.5rem; animation:pulse 1.5s infinite;">PRIVATE<span style="color:#fff">CHAT</span></h1>
+        <small style="color:#777; margin-top:10px; letter-spacing: 2px;">YOUR SECRETS, SAFE HERE...</small>
+    </div>
+
+    <div id="panic-overlay" class="hidden" ondblclick="togglePanic()">
+        <i class="fas fa-microchip" style="font-size: 4rem; margin-bottom: 20px;"></i>
+        <div style="font-size: 3rem;">12:00</div>
+        <div class="panic-text">SYSTEM UPDATE 99%...</div>
+        <div style="font-size: 0.8rem; color: #555; margin-top: 50px;">Double tap to cancel</div>
+    </div>
+
     <div id="lock-screen" class="hidden">
         <h2 style="margin-bottom:20px; color:var(--primary);">SECURITY LOCK</h2>
-        <div class="pin-display">
-            <div class="pin-dot" id="dot-1"></div><div class="pin-dot" id="dot-2"></div>
-            <div class="pin-dot" id="dot-3"></div><div class="pin-dot" id="dot-4"></div>
-        </div>
+        <div class="pin-display"><div class="pin-dot" id="dot-1"></div><div class="pin-dot" id="dot-2"></div><div class="pin-dot" id="dot-3"></div><div class="pin-dot" id="dot-4"></div></div>
         <div class="numpad">
             <button class="num-btn" onclick="enterPin(1)">1</button><button class="num-btn" onclick="enterPin(2)">2</button><button class="num-btn" onclick="enterPin(3)">3</button>
             <button class="num-btn" onclick="enterPin(4)">4</button><button class="num-btn" onclick="enterPin(5)">5</button><button class="num-btn" onclick="enterPin(6)">6</button>
@@ -129,52 +193,50 @@
     </div>
 
     <div id="toast-box"></div>
-
-    <div id="context-menu" class="hidden">
-        <div onclick="handleReaction('❤️')">❤️ Love</div>
-        <div onclick="handleReply()">Reply</div>
-        <div onclick="enterEditMode()">Edit</div>
-        <div onclick="deleteMessageAction()" class="danger">Delete</div>
-    </div>
+    <div id="context-menu" class="hidden"></div>
 
     <div id="auth-screen" class="screen active">
-        <div class="glass-card fade-in">
-            <h1>PRIVATE<span style="color:var(--primary)">CHAT</span></h1>
-            <p style="color:var(--text-sec); letter-spacing:2px; font-size:0.8rem;">YOUR SECRETS, SAFE HERE</p>
-            <div class="auth-inputs">
+        <div class="glass-card">
+            <div class="logo-area">
+                <h1 style="font-size: 2.2rem;">PRIVATE<span style="color:var(--primary)">CHAT</span></h1>
+                <p style="color:var(--text-sec); letter-spacing:3px; font-size:0.7rem; margin-top: 5px;">YOUR SECRETS, SAFE HERE</p>
+            </div>
+            <div class="auth-inputs" style="margin-top: 30px;">
                 <div class="input-group"><i class="fas fa-user" style="color:var(--primary)"></i><input type="text" id="username" placeholder="Username"></div>
                 <div class="input-group"><i class="fas fa-envelope" style="color:var(--primary)"></i><input type="email" id="email" placeholder="Email"></div>
                 <div class="input-group"><i class="fas fa-lock" style="color:var(--primary)"></i><input type="password" id="password" placeholder="Password"></div>
             </div>
-            <button onclick="handleAuth('login')" class="btn-main">LOGIN</button>
-            <button onclick="handleAuth('signup')" class="btn-sec">REGISTER</button>
-            <p id="auth-loader" class="hidden" style="color:var(--primary); margin-top:10px;">Connecting...</p>
+            <button onclick="handleAuth('login')" class="btn-main" style="margin-top: 20px;">LOGIN SYSTEM</button>
+            <button onclick="handleAuth('signup')" class="btn-sec" style="margin-top: 10px;">REGISTER ID</button>
+            <p id="auth-loader" class="hidden" style="color:var(--primary); margin-top:15px; font-size: 0.8rem;"><i class="fas fa-circle-notch fa-spin"></i> Authenticating...</p>
         </div>
     </div>
 
     <div id="chat-screen" class="screen">
         <div class="sidebar">
             <div class="my-header glass-panel">
-                <div class="profile-info" onclick="openSettings()">
+                <div class="profile-info" onclick="openSettings()" style="display: flex; align-items: center; cursor: pointer;">
                     <div class="avatar-circle" id="my-avatar"></div>
-                    <div class="user-details" style="margin-left: 10px;">
+                    <div class="user-details" style="margin-left: 12px;">
                         <h3 id="current-user-name" style="margin:0; font-size:1.1rem;">User</h3>
-                        <span id="current-user-bio" style="font-size:0.75rem; color:var(--text-sec);">Online</span>
+                        <span id="current-user-bio" style="font-size:0.75rem; color:var(--text-sec); display: block;">Online</span>
                     </div>
                 </div>
                 <div class="header-icons">
+                    <button onclick="togglePanic()" class="icon-btn panic-btn"><i class="fas fa-exclamation-triangle"></i></button>
                     <button onclick="toggleTheme()" class="icon-btn"><i class="fas fa-moon" id="theme-icon"></i></button>
                     <button onclick="openGroupModal()" class="icon-btn"><i class="fas fa-users"></i></button>
                     <button onclick="toggleRequests()" class="icon-btn position-relative"><i class="fas fa-user-plus"></i><span id="req-badge" class="hidden" style="position:absolute; top:0; right:0; background:red; width:8px; height:8px; border-radius:50%;"></span></button>
                     <button onclick="logout()" class="icon-btn"><i class="fas fa-power-off"></i></button>
                 </div>
             </div>
+
             <div id="requests-panel" class="glass-panel hidden" style="padding:10px;"><div id="req-list" class="user-list"></div></div>
             <div class="search-section">
-                <div class="glass-search">
-                    <i class="fas fa-search" style="color:#aaa; margin-right:10px;"></i>
-                    <input type="text" id="search-input" placeholder="Search Users...">
-                    <button onclick="searchUsers()" style="background:none; border:none; color:var(--primary); font-weight:bold;">GO</button>
+                <div class="input-group" style="margin: 10px;">
+                    <i class="fas fa-search" style="color:#aaa;"></i>
+                    <input type="text" id="search-input" placeholder="Search Agents..." style="padding: 10px;">
+                    <button onclick="searchUsers()" style="background:none; border:none; color:var(--primary); font-weight:bold; cursor: pointer;">GO</button>
                 </div>
             </div>
             <div id="search-results" class="user-list hidden"></div>
@@ -188,25 +250,22 @@
                     <h3 id="chat-with-name" style="margin:0; cursor:pointer;">Select Chat</h3>
                     <span id="user-status" style="font-size:0.75rem; color:var(--text-sec);">Ready</span>
                 </div>
-                <button onclick="toggleChatSearch()" class="icon-btn"><i class="fas fa-search"></i></button>
+                <button onclick="togglePanic()" class="icon-btn panic-btn"><i class="fas fa-exclamation-triangle"></i></button>
+                <button onclick="toggleBlockUser()" id="block-btn" class="icon-btn hidden"><i class="fas fa-ban"></i></button>
                 <button onclick="addMemberPrompt()" id="add-member-btn" class="icon-btn hidden"><i class="fas fa-user-plus"></i></button>
             </div>
 
-            <div id="chat-search-bar" class="hidden">
-                <input type="text" id="chat-search-input" placeholder="Search in this chat..." oninput="searchInChat()">
-                <i class="fas fa-times" onclick="toggleChatSearch()" style="color:var(--text-sec); cursor:pointer;"></i>
-            </div>
-
+            <div id="blocked-banner" class="hidden">🚫 MESSAGING BLOCKED</div>
             <div id="messages-container" class="messages"></div>
             <div id="typing-indicator" style="font-size:0.7rem; color:var(--primary); margin-left:20px; display:none; font-style:italic;">Typing...</div>
 
-            <div id="reply-preview" class="hidden" style="padding:10px; background:rgba(255,255,255,0.1);">
-                <span id="reply-to-text">Replying...</span> <span onclick="cancelReply()" style="float:right; cursor:pointer;">&times;</span>
+            <div id="reply-preview" class="hidden" style="padding:10px; background:rgba(255,255,255,0.1); backdrop-filter: blur(5px); border-left: 3px solid var(--primary);">
+                <span id="reply-to-text" style="font-size: 0.9rem;">Replying...</span> <span onclick="cancelReply()" style="float:right; cursor:pointer; color: var(--primary);">&times;</span>
             </div>
 
-            <div class="input-area glass-panel">
+            <div class="input-area glass-panel" id="input-area">
                 <div class="input-wrapper">
-                    <input type="text" id="msg-text" placeholder="Type a message..." autocomplete="off" oninput="handleTyping()">
+                    <input type="text" id="msg-text" placeholder="Type a secure message..." autocomplete="off" oninput="handleTyping()">
                     <button onclick="sendMessage()" class="send-btn-inside"><i class="fas fa-paper-plane" id="send-icon"></i></button>
                 </div>
             </div>
@@ -214,23 +273,24 @@
     </div>
 
     <div id="settings-modal" class="modal">
-        <div class="glass-card" style="width: 85%; max-width: 320px;">
-            <span onclick="closeSettings()" style="float:right; cursor:pointer; font-size:1.5rem;">&times;</span>
-            <h2>SETTINGS</h2>
-            <div class="input-group"><input type="text" id="edit-name" placeholder="Name"></div>
-            <div class="input-group"><input type="text" id="edit-bio" placeholder="Bio"></div>
+        <div class="glass-card" style="width: 85%; max-width: 350px;">
+            <span onclick="closeSettings()" style="float:right; cursor:pointer; font-size:1.5rem; color: var(--primary);">&times;</span>
+            <h2 style="color: var(--primary); margin-bottom: 20px;">AGENT PROFILE</h2>
+            <div class="input-group"><input type="text" id="edit-name" placeholder="Display Name"></div>
+            <div class="input-group"><input type="text" id="edit-bio" placeholder="Bio (Type #verify for badge)"></div>
             
+            <p style="text-align:left; color:var(--text-sec); margin-top:15px; font-weight:bold; font-size: 0.8rem;">SELECT AVATAR IDENTITY:</p>
+            <div class="avatar-grid" id="avatar-grid"></div>
+
             <div style="margin:15px 0; text-align:left; font-size:0.9rem;">
-                <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <label style="display:flex; justify-content:space-between; align-items:center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
                     Sound Effects <input type="checkbox" id="sound-toggle" onchange="toggleSound()">
                 </label>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>App Lock</span> 
-                    <button onclick="setupLock()" class="btn-sec" style="width:auto; padding:5px 10px; font-size:0.7rem;" id="lock-btn-txt">SET PIN</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <span>App Lock</span> <button onclick="setupLock()" class="btn-sec" style="width:auto; padding:5px 10px; font-size:0.7rem;" id="lock-btn-txt">SET PIN</button>
                 </div>
             </div>
-
-            <button onclick="saveProfile()" class="btn-main">SAVE</button>
+            <button onclick="saveProfile()" class="btn-main">UPDATE IDENTITY</button>
         </div>
     </div>
 
@@ -239,7 +299,7 @@
             <span onclick="closeGroupModal()" style="float:right; cursor:pointer; font-size:1.5rem;">&times;</span>
             <h2>NEW GROUP</h2>
             <div class="input-group"><input type="text" id="group-name" placeholder="Group Name"></div>
-            <button onclick="createGroup()" class="btn-main">CREATE</button>
+            <button onclick="createGroup()" class="btn-main">CREATE CHANNEL</button>
         </div>
     </div>
     <div id="group-info-modal" class="modal">
@@ -251,6 +311,38 @@
     </div>
 
     <script>
+        // --- 0. PRELOADER & MATRIX EFFECT ---
+        window.onload = () => {
+            const canvas = document.getElementById('matrix-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const letters = "JUBUCHATELITE010101XYZ";
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
+            function drawMatrix() {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#00f2ff"; // Matrix Text Color
+                ctx.font = fontSize + "px monospace";
+                for (let i = 0; i < drops.length; i++) {
+                    const text = letters[Math.floor(Math.random() * letters.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }
+            setInterval(drawMatrix, 35);
+            
+            // Fade out preloader
+            setTimeout(() => {
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => document.getElementById('preloader').style.display = 'none', 500);
+            }, 2500);
+        };
+
+        // CONFIG
         const firebaseConfig = {
           apiKey: "AIzaSyBw42Iq9GUBF2C8kaMPbOk-ZP8J8BI02To",
           authDomain: "chatapp-fe7c6.firebaseapp.com",
@@ -266,104 +358,68 @@
         const db = firebase.firestore();
 
         let currentUser = null, currentChatID = null, currentChatData = null, unsubscribe = null, replyTo = null, editMode = null, selectedMsgId = null, selectedMsgText = null;
+        let selectedAvatar = null;
+
+        // PANIC MODE
+        function togglePanic() {
+            const overlay = document.getElementById('panic-overlay');
+            if(overlay.classList.contains('hidden')){
+                overlay.classList.remove('hidden');
+                document.title = "System Update";
+            } else {
+                overlay.classList.add('hidden');
+                document.title = "Private Chat Elite";
+            }
+        }
+
+        // --- 1. AVATAR & COLORS ---
+        const avatars = ["🥷","🤖","👽","🦁","👻","🤡","👹","🐯","🐺","🐲","💀","🦄","🐼","🦅","🦉","🕷️","🦂","🐢","🦈","🦍","👾","🎃","😺","🦊","🐗","🐞","🍄","⚡","🔥","❄️","⭐","🌙","👑","💎","🚀","⚓","⚔️","🛡️","💣","🩸","🧬","☣️","☢️","🏴‍☠️","🕶️","🎩","🎓","🎧","🎮","💻"];
         
-        // --- 1. DYNAMIC AVATAR COLORS ---
+        function renderAvatarGrid() {
+            const grid = document.getElementById('avatar-grid');
+            grid.innerHTML = "";
+            avatars.forEach(av => {
+                const sp = document.createElement('span');
+                sp.className = 'avatar-option';
+                sp.innerText = av;
+                sp.onclick = () => { selectedAvatar = av; document.querySelectorAll('.avatar-option').forEach(e=>e.classList.remove('selected')); sp.classList.add('selected'); };
+                grid.appendChild(sp);
+            });
+        }
         function getAvatarColor(name) {
             const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
-            let hash = 0;
-            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            let hash = 0; for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
             return colors[Math.abs(hash) % colors.length];
         }
 
-        // --- 2. SOUND SYSTEM ---
+        // --- 2. SOUND & LOCK ---
         const audioSent = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
         const audioRecv = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
         let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
         document.getElementById('sound-toggle').checked = soundEnabled;
+        function toggleSound() { soundEnabled = document.getElementById('sound-toggle').checked; localStorage.setItem('soundEnabled', soundEnabled); }
+        function playSound(type) { if(soundEnabled) (type==='sent'?audioSent:audioRecv).play().catch(e=>{}); }
 
-        function toggleSound() {
-            soundEnabled = document.getElementById('sound-toggle').checked;
-            localStorage.setItem('soundEnabled', soundEnabled);
-        }
-        function playSound(type) {
-            if(!soundEnabled) return;
-            if(type==='sent') audioSent.play().catch(e=>{});
-            else audioRecv.play().catch(e=>{});
-        }
-
-        // --- 3. LOCK SCREEN SYSTEM ---
-        let userPin = localStorage.getItem('appPin');
-        let tempPin = "";
-        
-        // Initial Lock Check
-        if(userPin) {
-            document.getElementById('lock-screen').classList.remove('hidden');
-        } else {
-            document.getElementById('lock-btn-txt').innerText = "SET PIN";
-        }
-
-        function enterPin(num) {
-            if(tempPin.length < 4) {
-                tempPin += num;
-                updatePinDots();
-                if(tempPin.length === 4) checkPin();
-            }
-        }
-        function clearPin() { tempPin = ""; updatePinDots(); document.getElementById('lock-msg').innerText = ""; }
-        function updatePinDots() {
-            for(let i=1; i<=4; i++) {
-                document.getElementById(`dot-${i}`).className = i <= tempPin.length ? 'pin-dot filled' : 'pin-dot';
-            }
-        }
-        function checkPin() {
-            // Unlocking
-            if(document.getElementById('lock-screen').style.display !== 'none') {
-                if(tempPin === userPin) {
-                    document.getElementById('lock-screen').classList.add('hidden');
-                    tempPin = ""; updatePinDots();
-                } else {
-                    document.getElementById('lock-msg').innerText = "INCORRECT PIN";
-                    setTimeout(clearPin, 1000);
-                }
-            } else {
-                // Setting new PIN logic handled in prompt
-            }
-        }
-
-        function setupLock() {
-            if(userPin) {
-                if(confirm("Disable App Lock?")) {
-                    localStorage.removeItem('appPin');
-                    userPin = null;
-                    document.getElementById('lock-btn-txt').innerText = "SET PIN";
-                    showToast("Lock Disabled");
-                }
-            } else {
-                const p = prompt("Set 4-digit PIN:");
-                if(p && p.length === 4 && !isNaN(p)) {
-                    localStorage.setItem('appPin', p);
-                    userPin = p;
-                    document.getElementById('lock-btn-txt').innerText = "REMOVE PIN";
-                    showToast("Lock Enabled");
-                } else {
-                    alert("Invalid PIN. Use 4 digits.");
-                }
-            }
-        }
+        let userPin = localStorage.getItem('appPin'), tempPin = "";
+        if(userPin) document.getElementById('lock-screen').classList.remove('hidden');
+        else document.getElementById('lock-btn-txt').innerText = "SET PIN";
+        function enterPin(n){ if(tempPin.length<4){ tempPin+=n; updatePin(); if(tempPin.length===4) checkPin(); } }
+        function updatePin(){ for(let i=1;i<=4;i++) document.getElementById(`dot-${i}`).className = i<=tempPin.length?'pin-dot filled':'pin-dot'; }
+        function clearPin(){ tempPin=""; updatePin(); document.getElementById('lock-msg').innerText=""; }
+        function checkPin(){ if(tempPin===userPin){ document.getElementById('lock-screen').classList.add('hidden'); tempPin=""; updatePin(); } else { document.getElementById('lock-msg').innerText="INCORRECT"; setTimeout(clearPin,1000); } }
+        function setupLock(){ if(userPin){ if(confirm("Disable Lock?")){ localStorage.removeItem('appPin'); userPin=null; document.getElementById('lock-btn-txt').innerText="SET PIN"; showToast("Lock Disabled"); } } else { const p=prompt("Set 4-digit PIN:"); if(p&&p.length===4&&!isNaN(p)){ localStorage.setItem('appPin',p); userPin=p; document.getElementById('lock-btn-txt').innerText="REMOVE PIN"; showToast("Lock Enabled"); } else alert("Invalid PIN"); } }
 
         // --- AUTH ---
         const showToast = (m) => { const b=document.getElementById('toast-box'); const d=document.createElement('div'); d.className='toast'; d.innerText=m; b.appendChild(d); setTimeout(()=>d.remove(),3000); };
-        
         auth.onAuthStateChanged(user => {
             document.getElementById('auth-loader').classList.add('hidden');
             if (user) {
                 currentUser = user;
                 document.getElementById('auth-screen').classList.remove('active');
                 document.getElementById('chat-screen').classList.add('active');
-                
                 db.collection("users").doc(user.uid).get().then((doc) => {
                     if (doc.exists) loadUserInfo();
-                    else db.collection("users").doc(user.uid).set({ uid: user.uid, username: user.displayName||"User", email: user.email, blocked: [], bio: "Available", lastSeen: firebase.firestore.FieldValue.serverTimestamp() }).then(loadUserInfo);
+                    else db.collection("users").doc(user.uid).set({ uid: user.uid, username: user.displayName||"User", email: user.email, blocked: [], bio: "Available", isVerified: false, lastSeen: firebase.firestore.FieldValue.serverTimestamp() }).then(loadUserInfo);
                 });
                 loadFriendRequests(); loadActiveChats();
                 setInterval(() => db.collection("users").doc(currentUser.uid).update({lastSeen: firebase.firestore.FieldValue.serverTimestamp()}), 60000);
@@ -372,110 +428,129 @@
                 document.getElementById('chat-screen').classList.remove('active');
             }
         });
-
-        function handleAuth(action) {
-            const email = document.getElementById('email').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const username = document.getElementById('username').value.trim();
-            const loader = document.getElementById('auth-loader');
-            if (!email || !pass) return showToast("Enter Creds");
-            loader.classList.remove('hidden');
-
-            if (action === 'signup') {
-                if (!username) { loader.classList.add('hidden'); return showToast("Username needed"); }
-                auth.createUserWithEmailAndPassword(email, pass).then(cred => {
-                    cred.user.updateProfile({displayName: username});
-                    return db.collection("users").doc(cred.user.uid).set({ uid: cred.user.uid, username: username, email: email.toLowerCase(), blocked: [], bio: "Available" });
-                }).then(() => showToast("Account Created")).catch(e => { loader.classList.add('hidden'); showToast(e.message); });
-            } else {
-                auth.signInWithEmailAndPassword(email, pass).catch(e => { loader.classList.add('hidden'); showToast(e.message); });
-            }
+        function handleAuth(a) {
+            const e=document.getElementById('email').value.trim(), p=document.getElementById('password').value.trim(), u=document.getElementById('username').value.trim();
+            const l=document.getElementById('auth-loader'); l.classList.remove('hidden');
+            if(a==='signup'){ 
+                if(!u) return showToast("Username needed");
+                auth.createUserWithEmailAndPassword(e,p).then(c=>{ c.user.updateProfile({displayName:u}); return db.collection("users").doc(c.user.uid).set({uid:c.user.uid,username:u,email:e.toLowerCase(),blocked:[],bio:"Available", isVerified: false}); }).catch(e=>{l.classList.add('hidden');showToast(e.message)});
+            } else auth.signInWithEmailAndPassword(e,p).catch(e=>{l.classList.add('hidden');showToast(e.message)});
         }
 
-        // --- DATA & CHAT ---
+        // --- MAIN UI ---
         function loadUserInfo() {
             db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
                 if(doc.exists) {
                     const d = doc.data();
-                    document.getElementById('current-user-name').innerText = d.username;
+                    let verifiedHtml = d.isVerified ? '<i class="fas fa-certificate verified-badge"></i>' : '';
+                    document.getElementById('current-user-name').innerHTML = d.username + verifiedHtml;
                     const av = document.getElementById('my-avatar');
-                    av.innerText = d.username[0].toUpperCase();
-                    av.style.background = getAvatarColor(d.username); // Dynamic Color
+                    av.innerText = d.avatar || d.username[0].toUpperCase();
+                    av.style.background = d.avatar ? 'transparent' : getAvatarColor(d.username);
+                    av.style.fontSize = d.avatar ? '2rem' : '1.5rem';
                     document.getElementById('current-user-bio').innerText = d.bio || "Available";
                 }
             });
         }
-
         function loadActiveChats() {
             db.collection("users").doc(currentUser.uid).collection("activeChats").orderBy("lastUpdated", "desc").onSnapshot(snap => {
                 const list = document.getElementById('chat-list'); list.innerHTML = "";
                 snap.forEach(doc => {
                     const d = doc.data();
                     const div = document.createElement('div'); div.className = 'user-item';
-                    const icon = d.isGroup ? '<i class="fas fa-users"></i>' : d.name.charAt(0);
-                    const col = d.isGroup ? 'linear-gradient(45deg, #ff0099, #493240)' : getAvatarColor(d.name);
-                    div.innerHTML = `<div class="avatar-circle" style="background:${col}">${icon}</div><div><b>${d.name}</b><br><small style="color:var(--text-sec)">${d.lastMsg}</small></div>`;
-                    div.onclick = () => startChat(d, d.isGroup);
+                    const isG = d.isGroup;
+                    let icon = isG ? '👥' : (d.avatar || d.name[0]);
+                    let col = isG ? '#333' : getAvatarColor(d.name);
+                    
+                    // Fetch user info for badge/avatar
+                    if(!isG) db.collection("users").doc(d.uid).get().then(u=>{ 
+                        if(u.exists) {
+                            if(u.data().avatar) div.querySelector('.avatar-circle').innerText=u.data().avatar;
+                            if(u.data().isVerified) div.querySelector('b').innerHTML += ' <i class="fas fa-certificate verified-badge"></i>';
+                        }
+                    });
+
+                    div.innerHTML = `<div class="avatar-circle" style="background:${d.avatar?'transparent':col}; font-size:${d.avatar?'1.8rem':'1.2rem'}">${icon}</div><div style="flex:1"><b>${d.name}</b><br><small style="color:var(--text-sec)">${d.lastMsg}</small></div>`;
+                    div.onclick = () => startChat(d, isG);
                     list.appendChild(div);
                 });
             });
         }
 
+        // --- CHAT & BLOCK LOGIC ---
         function startChat(data, isGroup) {
             currentChatData = data;
             document.getElementById('chat-screen').classList.add('chat-active');
-            document.getElementById('chat-with-name').innerText = data.name;
+            let nameHtml = data.name;
+            document.getElementById('chat-with-name').innerHTML = nameHtml;
             document.getElementById('add-member-btn').classList.add('hidden');
+            document.getElementById('block-btn').classList.toggle('hidden', isGroup);
             
-            // Hide Search on chat change
-            document.getElementById('chat-search-bar').classList.add('hidden');
-            document.getElementById('chat-search-input').value = "";
+            checkBlockStatus(); // Check if blocked
 
             if (isGroup) {
                 currentChatID = data.id;
                 loadMessages(currentChatID);
                 document.getElementById('user-status').innerText = "Group";
-                db.collection("groups").doc(data.id).get().then(doc => {
-                    if(doc.data().admins?.includes(currentUser.uid)) document.getElementById('add-member-btn').classList.remove('hidden');
-                });
+                db.collection("groups").doc(data.id).get().then(doc=>{ if(doc.data().admins?.includes(currentUser.uid)) document.getElementById('add-member-btn').classList.remove('hidden'); });
             } else {
                 currentChatID = [currentUser.uid, data.uid].sort().join("_");
                 loadMessages(currentChatID);
                 db.collection("users").doc(data.uid).onSnapshot(doc => {
-                    const ls = doc.data()?.lastSeen;
-                    const diff = ls ? (new Date() - ls.toDate())/1000 : 10000;
-                    document.getElementById('user-status').innerText = diff < 60 ? "Online" : "Offline";
-                    document.getElementById('user-status').style.color = diff < 60 ? "#00ff88" : "var(--text-sec)";
+                    const d = doc.data();
+                    if(d.isVerified) document.getElementById('chat-with-name').innerHTML = d.username + ' <i class="fas fa-certificate verified-badge"></i>';
+                    const diff = d.lastSeen ? (new Date() - d.lastSeen.toDate())/1000 : 9999;
+                    const stat = diff < 60 ? "Online" : "Offline";
+                    document.getElementById('user-status').innerText = stat;
+                    document.getElementById('user-status').style.color = stat==="Online"?"#00ff88":"var(--text-sec)";
                 });
             }
         }
 
+        // --- 3. BLUE TICK SYSTEM ---
         function loadMessages(chatID) {
             if(unsubscribe) unsubscribe();
             unsubscribe = db.collection("chats").doc(chatID).collection("messages").orderBy("createdAt", "asc").onSnapshot(snap => {
                 const container = document.getElementById('messages-container');
                 container.innerHTML = "";
                 snap.docChanges().forEach(c => {
-                    if(c.type==="added" && c.doc.data().uid !== currentUser.uid) playSound('recv');
+                    if(c.type==="added"){
+                        const m = c.doc.data();
+                        if(m.uid !== currentUser.uid) playSound('recv');
+                        // MARK AS SEEN
+                        if(m.uid !== currentUser.uid && m.status !== 'seen') {
+                            c.doc.ref.update({status: 'seen'});
+                        }
+                    }
                 });
                 snap.forEach(doc => {
                     const msg = doc.data();
                     const div = document.createElement('div');
-                    div.className = `msg ${msg.uid === currentUser.uid ? 'me' : 'other'}`;
+                    const isMe = msg.uid === currentUser.uid;
+                    div.className = `msg ${isMe ? 'me' : 'other'}`;
                     
-                    let sender = (currentChatData.isGroup && msg.uid !== currentUser.uid && msg.senderName) ? `<span class="msg-sender">${msg.senderName}</span>` : "";
-                    let extra = msg.replyTo ? `<div style="font-size:0.8rem; opacity:0.7; border-left:2px solid var(--primary); padding-left:5px; margin-bottom:5px;">${msg.replyTo}</div>` : "";
-                    let editTag = msg.isEdited ? ' <small style="opacity:0.5">(edited)</small>' : '';
+                    let sender = "";
+                    if(currentChatData.isGroup && !isMe && msg.senderName) {
+                        sender = `<span class="msg-sender">${msg.senderName} ${msg.senderVerified ? '<i class="fas fa-certificate verified-badge" style="font-size:0.6rem"></i>' : ''}</span>`;
+                    }
+                    let extra = msg.replyTo ? `<div style="font-size:0.8rem;opacity:0.7;border-left:2px solid var(--primary);padding-left:5px;">${msg.replyTo}</div>` : "";
+                    
+                    // Reaction Display
+                    let reactionHtml = msg.reaction ? `<div style="position:absolute; bottom:-10px; right:-5px; background:#222; border-radius:10px; padding:2px 5px; font-size:0.8rem; border:1px solid #444;">${msg.reaction}</div>` : "";
 
-                    div.innerHTML = `${sender} ${extra} <span class="msg-content">${msg.text}</span> ${editTag}`;
+                    // Tick Logic
+                    let tickHtml = "";
+                    if(isMe) {
+                        const tickClass = msg.status === 'seen' ? 'tick-icon seen' : 'tick-icon';
+                        const icon = msg.status === 'seen' ? '<i class="fas fa-check-double"></i>' : '<i class="fas fa-check"></i>';
+                        tickHtml = `<span class="${tickClass}">${icon}</span>`;
+                    }
                     
-                    div.oncontextmenu = (e) => { e.preventDefault(); openContextMenu(e, doc.id, msg.text, msg.uid===currentUser.uid); };
-                    
-                    // Swipe
-                    let tx = 0;
-                    div.ontouchstart = (e) => { tx = e.touches[0].clientX; };
-                    div.ontouchend = (e) => { if(e.changedTouches[0].clientX - tx > 50) { selectedMsgText=msg.text; handleReply(); } };
+                    const time = msg.createdAt ? msg.createdAt.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '...';
 
+                    div.innerHTML = `${sender} ${extra} ${msg.text} <div class="msg-meta">${time} ${tickHtml}</div> ${reactionHtml}`;
+                    div.oncontextmenu = (e)=>{e.preventDefault(); openContextMenu(e, doc.id, msg.text, isMe)};
+                    let tx=0; div.ontouchstart=(e)=>{tx=e.touches[0].clientX}; div.ontouchend=(e)=>{if(e.changedTouches[0].clientX-tx>50){selectedMsgText=msg.text;handleReply()}};
                     container.appendChild(div);
                 });
                 container.scrollTop = container.scrollHeight;
@@ -486,67 +561,136 @@
             const input = document.getElementById('msg-text');
             const text = input.value.trim();
             if(!text) return;
+            
+            // Block Check
+            db.collection("users").doc(currentUser.uid).get().then(doc => {
+                const blocked = doc.data().blocked || [];
+                const isVerified = doc.data().isVerified || false;
+                
+                if(!currentChatData.isGroup && blocked.includes(currentChatData.uid)) {
+                    showToast("You blocked this user.");
+                    return;
+                }
+                
+                if(editMode) {
+                    db.collection("chats").doc(currentChatID).collection("messages").doc(editMode).update({text:text, isEdited:true});
+                    cancelReply(); input.value=""; return;
+                }
 
-            if(editMode) {
-                db.collection("chats").doc(currentChatID).collection("messages").doc(editMode).update({text:text, isEdited:true});
-                cancelReply(); input.value=""; return;
-            }
-
-            db.collection("chats").doc(currentChatID).collection("messages").add({
-                text: text, uid: currentUser.uid, senderName: currentUser.displayName,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(), replyTo: replyTo ? replyTo.text : null
-            });
-            playSound('sent');
-
-            const upd = {lastMsg:text, lastUpdated:firebase.firestore.FieldValue.serverTimestamp()};
-            if(!currentChatData.isGroup) {
-                db.collection("users").doc(currentUser.uid).collection("activeChats").doc(currentChatData.uid).update(upd);
-                db.collection("users").doc(currentChatData.uid).collection("activeChats").doc(currentUser.uid).update(upd);
-            } else {
-                db.collection("users").doc(currentUser.uid).collection("activeChats").doc(currentChatData.id).update(upd);
-            }
-            cancelReply(); input.value="";
-        }
-
-        // --- 4. CHAT SEARCH ---
-        function toggleChatSearch() {
-            const bar = document.getElementById('chat-search-bar');
-            bar.classList.toggle('hidden');
-            if(!bar.classList.contains('hidden')) document.getElementById('chat-search-input').focus();
-            else { document.getElementById('chat-search-input').value = ""; searchInChat(); }
-        }
-
-        function searchInChat() {
-            const term = document.getElementById('chat-search-input').value.toLowerCase();
-            const msgs = document.querySelectorAll('.msg');
-            msgs.forEach(msg => {
-                const text = msg.querySelector('.msg-content')?.innerText.toLowerCase() || "";
-                if(text.includes(term) || term === "") msg.style.display = "block";
-                else msg.style.display = "none";
+                db.collection("chats").doc(currentChatID).collection("messages").add({
+                    text: text, uid: currentUser.uid, senderName: currentUser.displayName, senderVerified: isVerified,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                    replyTo: replyTo ? replyTo.text : null,
+                    status: 'sent'
+                });
+                playSound('sent');
+                
+                const upd = {lastMsg:text, lastUpdated:firebase.firestore.FieldValue.serverTimestamp()};
+                if(!currentChatData.isGroup) {
+                    db.collection("users").doc(currentUser.uid).collection("activeChats").doc(currentChatData.uid).update(upd);
+                    db.collection("users").doc(currentChatData.uid).collection("activeChats").doc(currentUser.uid).update(upd);
+                } else db.collection("users").doc(currentUser.uid).collection("activeChats").doc(currentChatData.id).update(upd);
+                
+                cancelReply(); input.value="";
             });
         }
 
-        // --- CORE FUNCTIONS ---
+        // --- BLOCK SYSTEM ---
+        function checkBlockStatus() {
+            if(currentChatData.isGroup) {
+                document.getElementById('blocked-banner').classList.add('hidden');
+                document.getElementById('input-area').classList.remove('hidden');
+                return;
+            }
+            db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
+                const blocked = doc.data().blocked || [];
+                const isBlocked = blocked.includes(currentChatData.uid);
+                const banner = document.getElementById('blocked-banner');
+                const inp = document.getElementById('input-area');
+                const btn = document.getElementById('block-btn');
+                
+                if(isBlocked) {
+                    banner.classList.remove('hidden');
+                    inp.classList.add('hidden');
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i>'; // Unblock icon
+                    btn.style.color = "#00ff88";
+                } else {
+                    banner.classList.add('hidden');
+                    inp.classList.remove('hidden');
+                    btn.innerHTML = '<i class="fas fa-ban"></i>'; // Block icon
+                    btn.style.color = "#ff4757";
+                }
+            });
+        }
+
+        function toggleBlockUser() {
+            if(currentChatData.isGroup) return;
+            const uid = currentChatData.uid;
+            db.collection("users").doc(currentUser.uid).get().then(doc => {
+                let blocked = doc.data().blocked || [];
+                if(blocked.includes(uid)) {
+                    if(confirm("Unblock this user?")) {
+                        db.collection("users").doc(currentUser.uid).update({blocked: firebase.firestore.FieldValue.arrayRemove(uid)});
+                        showToast("User Unblocked");
+                    }
+                } else {
+                    if(confirm("Block this user? They won't be able to message you.")) {
+                        db.collection("users").doc(currentUser.uid).update({blocked: firebase.firestore.FieldValue.arrayUnion(uid)});
+                        showToast("User Blocked");
+                    }
+                }
+            });
+        }
+
+        // --- UTILS ---
+        function openContextMenu(e, id, txt, isMe) { 
+            selectedMsgId=id; selectedMsgText=txt; 
+            const m=document.getElementById('context-menu'); m.innerHTML='';
+            
+            const items = [
+                {icon:'❤️', text:'Love', action:()=>handleReaction('❤️')},
+                {icon:'😂', text:'Haha', action:()=>handleReaction('😂')},
+                {icon:'👍', text:'Like', action:()=>handleReaction('👍')},
+                {icon:'↩️', text:'Reply', action:()=>handleReply()},
+                {icon:'📋', text:'Copy', action:()=>{navigator.clipboard.writeText(txt); showToast("Copied")}}
+            ];
+            if(isMe) items.push({icon:'✏️', text:'Edit', action:()=>enterEditMode()}, {icon:'🗑️', text:'Delete', action:()=>deleteMessageAction(), danger:true});
+            
+            items.forEach(i => {
+                const d = document.createElement('div');
+                d.innerHTML = `<span>${i.icon}</span> ${i.text}`;
+                if(i.danger) d.classList.add('danger');
+                d.onclick = i.action;
+                m.appendChild(d);
+            });
+
+            m.style.top=(e.clientY||e.touches[0].clientY)+'px'; m.style.left=(e.clientX||e.touches[0].clientX)+'px'; m.classList.remove('hidden'); 
+            setTimeout(()=>document.addEventListener('click',()=>m.classList.add('hidden'),{once:true}),200); 
+        }
+
         function toggleTheme() { document.body.classList.toggle('light-mode'); document.getElementById('theme-icon').className = document.body.classList.contains('light-mode') ? "fas fa-sun" : "fas fa-moon"; }
-        function logout(){auth.signOut();} 
-        function toggleRequests(){document.getElementById('requests-panel').classList.toggle('hidden');} 
-        function closeChat(){document.getElementById('chat-screen').classList.remove('chat-active');} 
-        function openGroupModal(){document.getElementById('group-modal').style.display='flex';} 
-        function closeGroupModal(){document.getElementById('group-modal').style.display='none';} 
-        function openSettings(){document.getElementById('settings-modal').style.display='flex'; 
-            if(userPin) document.getElementById('lock-btn-txt').innerText="REMOVE PIN";
-        } 
+        function logout(){auth.signOut();} function toggleRequests(){document.getElementById('requests-panel').classList.toggle('hidden');} function closeChat(){document.getElementById('chat-screen').classList.remove('chat-active');} function openGroupModal(){document.getElementById('group-modal').style.display='flex';} function closeGroupModal(){document.getElementById('group-modal').style.display='none';} 
+        function openSettings(){document.getElementById('settings-modal').style.display='flex'; renderAvatarGrid(); if(userPin) document.getElementById('lock-btn-txt').innerText="REMOVE PIN";} 
         function closeSettings(){document.getElementById('settings-modal').style.display='none';} 
-        function saveProfile(){ const n=document.getElementById('edit-name').value; const b=document.getElementById('edit-bio').value; if(n||b){ const u={}; if(n) u.username=n; if(b) u.bio=b; db.collection("users").doc(currentUser.uid).update(u); if(n) currentUser.updateProfile({displayName:n}); closeSettings(); } }
+        function saveProfile(){ 
+            let n=document.getElementById('edit-name').value; let b=document.getElementById('edit-bio').value; 
+            const u={}; 
+            
+            // Verified Logic
+            if(b === "#verify") { u.isVerified = true; b = "Verified Elite User"; showToast("VERIFIED BADGE UNLOCKED!"); }
+            
+            if(n) u.username=n; if(b) u.bio=b; if(selectedAvatar) u.avatar=selectedAvatar;
+            
+            db.collection("users").doc(currentUser.uid).update(u); 
+            if(n) currentUser.updateProfile({displayName:n}); closeSettings(); 
+        }
         function handleTyping(){ if(currentChatID) { db.collection("chats").doc(currentChatID).set({typing:currentUser.uid, typingName:currentUser.displayName},{merge:true}); clearTimeout(typingTimeout); typingTimeout=setTimeout(()=>db.collection("chats").doc(currentChatID).set({typing:null},{merge:true}),2000); } }
-        
-        function openContextMenu(e, id, txt, isMe) { selectedMsgId=id; selectedMsgText=txt; const m=document.getElementById('context-menu'); m.style.top=(e.clientY||e.touches[0].clientY)+'px'; m.style.left=(e.clientX||e.touches[0].clientX)+'px'; m.classList.remove('hidden'); m.children[2].style.display=isMe?'block':'none'; m.children[3].style.display=isMe?'block':'none'; setTimeout(()=>document.addEventListener('click',()=>m.classList.add('hidden'),{once:true}),200); }
+        let typingTimeout=null;
         function handleReaction(e){ if(selectedMsgId) db.collection("chats").doc(currentChatID).collection("messages").doc(selectedMsgId).update({reaction:e}); } 
         function handleReply(){ document.getElementById('reply-preview').classList.remove('hidden'); document.getElementById('reply-to-text').innerText="Reply: "+selectedMsgText; replyTo={text:selectedMsgText}; } 
         function enterEditMode(){ editMode=selectedMsgId; document.getElementById('msg-text').value=selectedMsgText; document.getElementById('reply-preview').classList.remove('hidden'); document.getElementById('reply-to-text').innerText="Editing..."; document.getElementById('send-icon').className="fas fa-check"; }
         function cancelReply(){ replyTo=null; editMode=null; document.getElementById('reply-preview').classList.add('hidden'); document.getElementById('send-icon').className="fas fa-paper-plane"; document.getElementById('msg-text').value=""; } 
         function deleteMessageAction(){ if(confirm("Delete?")) db.collection("chats").doc(currentChatID).collection("messages").doc(selectedMsgId).delete(); } 
-        
         function searchUsers() { const v=document.getElementById('search-input').value.toLowerCase(); const r=document.getElementById('search-results'); r.classList.remove('hidden'); db.collection("users").where("email",">=",v).where("email","<=",v+"\uf8ff").get().then(s=>{ r.innerHTML=""; s.forEach(doc=>{ if(doc.data().uid!==currentUser.uid){ const div=document.createElement('div'); div.className='user-item'; div.innerHTML=`<div class="avatar-circle" style="background:${getAvatarColor(doc.data().username)}">${doc.data().username[0]}</div><div style="flex:1"><b>${doc.data().username}</b></div><button class="btn-sec" style="width:auto; padding:5px 15px;" onclick="sendRequest('${doc.data().uid}','${doc.data().username}')">ADD</button>`; r.appendChild(div); }}); }); }
         function sendRequest(uid, name) { db.collection("friend_requests").doc([currentUser.uid,uid].sort().join("_")).set({from:currentUser.uid,fromName:currentUser.displayName,to:uid,status:'pending'}).then(()=>showToast("SENT")); }
         function loadFriendRequests() { db.collection("friend_requests").where("to","==",currentUser.uid).where("status","==","pending").onSnapshot(s=>{ const l=document.getElementById('req-list'); l.innerHTML=""; const b=document.getElementById('req-badge'); if(s.empty){b.classList.add('hidden');l.innerHTML="<div style='padding:10px;color:var(--text-sec)'>Empty</div>"}else{b.classList.remove('hidden');s.forEach(d=>{ const div=document.createElement('div');div.className='user-item';div.innerHTML=`<b>${d.data().fromName}</b><button class="btn-sec" style="width:auto" onclick="accept('${d.id}','${d.data().from}','${d.data().fromName}')">ACCEPT</button>`;l.appendChild(div); });} }); }
